@@ -23,7 +23,7 @@ export default [
   {
     path: '/',
     name: '_home',
-    redirect: '/home',
+    redirect: '/c/home',
     component: Main,
     meta: {
       hideInMenu: true,
@@ -31,7 +31,7 @@ export default [
     },
     children: [
       {
-        path: '/home',
+        path: '/c/home',
         name: 'home',
         meta: {
           hideInMenu: true,
@@ -51,10 +51,11 @@ export default [
       icon:'ios-cog'
     },
     children:[
-      { path:'/my', name:'my', meta: { icon: 'md-bookmarks',title: '我的资料',access: ['client:my'] }, component: () => import('@/view/client/my/index') },
-      { path:'/credits', name:'credits', meta: { icon: 'md-bookmarks',title: '我的学分',access: ['client:credits'] }, component: () => import('@/view/client/credits/index') },
-      { path:'/activities', name:'activities', meta: { icon: 'md-bookmarks',title: '我的活动',access: ['client:activities'] }, component: () => import('@/view/client/activity/index') },
-      { path:'/auth',  name:'auth', meta: { icon: 'md-bookmarks',title: '学生认证',access: ['client:auth'] }, component: () => import('@/view/client/auth/index') }
+      { path:'my', name:'my', meta: { icon: 'md-bookmarks',title: '我的资料',access: ['client:my'] }, component: () => import('@/view/client/my/index') },
+      { path:'credits', name:'credits', meta: { icon: 'md-bookmarks',title: '我的学分',access: ['client:credits'] }, component: () => import('@/view/client/credits/index') },
+      { path:'activities', name:'activities', meta: { icon: 'md-bookmarks',title: '我的活动',access: ['client:activities'] }, component: () => import('@/view/client/activity/index') },
+      { path:'auth',  name:'auth', meta: { icon: 'md-bookmarks',title: '学生认证',access: ['client:auth'] }, component: () => import('@/view/client/auth/index') },
+      { path:'detail/:id',  name:'detail', meta: { icon: 'md-bookmarks',title: '活动详情',access: ['client:detail'] }, component: () => import('@/view/client/activity/detail.vue') }
     ]
   },
   {

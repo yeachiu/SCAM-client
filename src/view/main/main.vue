@@ -9,15 +9,15 @@
           <div class="header-nav">
             <MenuItem name="home">
               <Icon type="ios-navigate"></Icon>
-              <router-link to="/home">发现</router-link>
+              <router-link to="/c/home">发现</router-link>
             </MenuItem>
             <MenuItem name="activities">
               <Icon type="ios-keypad"></Icon>
-              <router-link to="/activities">我的活动</router-link>
+              <router-link to="/c/activities">我的活动</router-link>
             </MenuItem>
             <MenuItem name="my">
               <Icon type="ios-analytics"></Icon>
-              <router-link to="/my">个人主页</router-link>
+              <router-link to="/c/my">个人主页</router-link>
             </MenuItem>
             <MenuItem name="user">
               <user :user-avator="userAvator"/>

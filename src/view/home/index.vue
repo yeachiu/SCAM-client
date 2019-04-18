@@ -3,7 +3,7 @@
     <Row style="width:980px;margin:0 auto;">
       <Col span="16">
         <div class="listItem" v-for="item in list">
-          <Col span="16" class="col">
+          <Col span="16" class="col"> 
             <div class="content">
               <a class="title1" target="_blank" @click="linkToDetail(item.actAbstract.id)">{{item.actAbstract.title}}</a>
               <p class="abstract">{{item.actAbstract.description}}</p>
@@ -99,7 +99,7 @@ export default {
     },
     linkToDetail(actiId){
       this.$router.push({
-        path: `/detail/${actiId}`,
+        path: `detail/${actiId}`,
       })
     },
     linkToApartment(apartId){

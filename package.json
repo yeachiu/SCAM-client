@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "luckyCat",
   "scripts": {
-    "dev": "vue-cli-service serve --open --port=1003",
+    "dev": "vue-cli-service serve --open --port=1004",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "test:unit": "vue-cli-service test:unit",

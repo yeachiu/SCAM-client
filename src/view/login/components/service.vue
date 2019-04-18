@@ -1,33 +1,32 @@
 <template>
-  <div class="login">
-      
+  <div class="login">    
     <Row  class="login-model">
-        <Col span="24">
-            <Card>
-              <div style="text-align:center;padding:10px">
-                <h2>用户登录</h2>
-                <br>
-                <Form @submit.native.prevent="handleSubmit" ref="formItem" :model="formItem" :rules="FromRule" >
-                    <FormItem prop="account">
-                      <Input :disabled="isValidate" v-model.trim="formItem.account" type="text" placeholder="用户名">
-                          <Icon type="md-person"  slot="prepend"/>
-                      </Input>
-                    </FormItem>
-                    <FormItem prop="password">
-                        <Input :disabled="isValidate" v-model.trim="formItem.password" type="password" placeholder="密码">
-                            <Icon type="ios-lock" slot="prepend"/>
-                        </Input>
-                    </FormItem>
-                    <FormItem>
-                        <Checkbox :disabled="isValidate" v-model="formItem.agree">下次登录记住我的身份</Checkbox><br>
-                        <Button :loading="isSubmit"  :disabled="isValidate" html-type="submit" type="primary">
-                            {{isValidate ? '登录验证中':'立即登录'}}
-                        </Button>
-                    </FormItem>
-                </Form>
-              </div>
-          </Card>
-        </Col>
+      <Col span="24">
+        <Card>
+          <div style="text-align:center;padding:10px">
+            <h2>用户登录</h2>
+            <br>
+            <Form @submit.native.prevent="handleSubmit" ref="formItem" :model="formItem" :rules="FromRule" >
+              <FormItem prop="account">
+                <Input :disabled="isValidate" v-model.trim="formItem.account" type="text" placeholder="用户名">
+                  <Icon type="md-person"  slot="prepend"/>
+                </Input>
+              </FormItem>
+              <FormItem prop="password">
+                <Input :disabled="isValidate" v-model.trim="formItem.password" type="password" placeholder="密码">
+                  <Icon type="ios-lock" slot="prepend"/>
+                </Input>
+              </FormItem>
+              <FormItem>
+                <Checkbox :disabled="isValidate" v-model="formItem.agree">下次登录记住我的身份</Checkbox><br>
+                <Button :loading="isSubmit"  :disabled="isValidate" html-type="submit" type="primary">
+                  {{isValidate ? '登录验证中':'立即登录'}}
+                </Button>
+              </FormItem>
+            </Form>
+          </div>
+        </Card>
+      </Col>
     </Row>
   </div>
 </template>
