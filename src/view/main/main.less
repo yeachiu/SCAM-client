@@ -1,4 +1,5 @@
 .main{
+  height: 100%;
   .logo-con{
     height: 64px;
     padding: 10px;
@@ -10,17 +11,26 @@
     }
   }
   .header-con{
-    background: #fff;
-    padding: 0 20px;
+    position: fixed;
     width: 100%;
+    background: #fff;
   }
   .main-layout-con{
     height: 100%;
     overflow: hidden;
   }
   .main-content-con{
-    height: ~"calc(100% - 60px)";
-    overflow: hidden;
+    margin: 88px 0;
+    background: #fff;
+    height: 100%;
+  }
+  .main-footer-center {
+    background: #fff;
+    position: absolute;
+    text-align: center;
+    bottom: 0;
+    left: 0%;
+    right: 0%;
   }
   .tag-nav-wrapper{
     padding: 0;
@@ -29,8 +39,9 @@
   }
   .content-wrapper{
     padding: 18px;
-    height: ~"calc(100% - 80px)";
+    height: 100%;
     overflow: auto;
+
   }
   .left-sider{
     .ivu-layout-sider-children{
