@@ -2,22 +2,23 @@
   <div>
     <Row style="width:980px;margin:0 auto;">
       <Col span="16">
-        <div class="listItem" v-for="item in list">
+        <div class="listItem" v-for="item in list" :key="item.id">
           <Col span="16" class="col"> 
             <div class="content">
-              <a class="title1" target="_blank" @click="linkToDetail(item.actAbstract.id)">{{item.actAbstract.title}}</a>
-              <p class="abstract">{{item.actAbstract.description}}</p>
+              <a class="title1" target="_blank" @click="linkToDetail(item.id)">{{item.title}}</a>
+              <p class="abstract">{{item.description}}</p>
               <div class="meta1">
-                <span style="margin: 0 5px;"><Icon type="md-flame" size="14" color="#ea6f5a"/>&nbsp;{{getStateName(item.actAbstract.status,'acti')}}</span>
-                <span><a class="nickname" target="_blank" @click="linkToApartment(item.actAbstract.apartment.id)">{{item.actAbstract.apartment.name}}</a></span>    
-                <span v-if="item.status>2" title="活动时间"><Icon type="md-time" size="16"/>&nbsp;{{item.actAbstract.startTime}} - {{item.actAbstract.endTime}}</span>
-                <span v-else title="报名时间"><Icon type="md-alarm" size="16"/>&nbsp;{{item.actAbstract.signupTime}} - {{item.actAbstract.deadlineTime}}</span>      
+                <span style="margin: 0 5px;"><Icon type="md-flame" size="14" color="#ea6f5a"/>&nbsp;{{getStateName(item.status,'acti')}}</span>
+                <span><a class="nickname" target="_blank" @click="linkToApartment(item.organizerId)">{{item.organizerName}}</a></span>    
+                <span title="活动时间" v-if="item.status > 2"><Icon type="md-time" size="16"/>&nbsp;{{dateformat(item.startTime)}} - {{dateformat(item.endTime)}}</span>
+                <span title="报名时间" v-else><Icon type="md-alarm" size="16"/>&nbsp;{{dateformat(item.signupTime)}} - {{dateformat(item.deadlineTime)}}</span>      
               </div>
             </div>
           </Col>
-          <Col span="8" class="col">
-            <a class="wrap-img" @click="linkToDetail(item.actAbstract.id)" target="_self">
-              <img class="img-blur-done" v-bind:src="item.actAbstract.imgPath" alt="120">
+          <Col span="8" class="col wrap-img" >
+            <a @click="linkToDetail(item.id)" target="_self">
+              <img v-bind:src="item.pictureUrl" alt="活动配图" v-if="checkPath(item.pictureUrl)"/>
+              <img v-bind:src="global_.public_img" alt="活动配图" v-else>
             </a>
           </Col>
         </div>
@@ -33,54 +34,12 @@
 import global_  from  '@/view/global.vue'
 import dayjs from "dayjs";
 import { post } from "@/libs/axios-cfg";
+
 export default {
   data(){
     return{
-      list:[
-        {
-          actAbstract:{
-            id:'11110',
-            title:'活动标题',
-            description:'这是一段此次活动的简要描述',
-            signupTime: "2019-04-09",
-            deadlineTime: "2019-04-09",
-            startTime: "2019-04-09",
-            endTime: "2019-04-09",
-            status:2,
-            apartment:{id:'123334',name:'数学系网络技术部'},
-            imgPath:'https://file.iviewui.com/dist/2ecd3b0452aa197097d5131afacab7b8.png',  // /upload/upload_images/imgId.jsp?imageformat/w/#/h/#
-          }
-        },
-        {
-          actAbstract:{
-            id:'11110',
-            title:'活动标题',
-            description:'这是一段此次活动的简要描述',
-            signupTime: "2019-04-09",
-            deadlineTime: "2019-04-09",
-            startTime: "2019-04-09",
-            endTime: "2019-04-09",
-            status:2,
-            apartment:{id:'123334',name:'数学系网络技术部'},
-            imgPath:'https://file.iviewui.com/dist/2ecd3b0452aa197097d5131afacab7b8.png',  // /upload/upload_images/imgId.jsp?imageformat/w/#/h/#
-          }
-        },
-        {
-          actAbstract:{
-            id:'11110',
-            title:'活动标题',
-            description:'这是一段此次活动的简要描述',
-            signupTime: "2019-04-09",
-            deadlineTime: "2019-04-09",
-            startTime: "2019-04-09",
-            endTime: "2019-04-09",
-            status:2,
-            apartment:{id:'123334',name:'数学系网络技术部'},
-            imgPath:'https://file.iviewui.com/dist/2ecd3b0452aa197097d5131afacab7b8.png',  // /upload/upload_images/imgId.jsp?imageformat/w/#/h/#
-          }
-        }
-      ],
-      
+      loading:false,
+      list:[],
     }
   },
   created() {
@@ -89,12 +48,12 @@ export default {
   methods: {
     async getData() {
       this.loading = true;
-      // try {
-      //   const res = await post('/system/user/getUserData/{id}',null,userId);
-      //   this.userData = res;
-      // } catch (error) {
-      //   this.$throw(error);
-      // }
+      try {
+        let res = await post('/app/activity/get/list');
+        this.list = res.data;
+      } catch (error) {
+        this.$throw(error);
+      }
       this.loading = false;
     },
     linkToDetail(actiId){
@@ -116,13 +75,17 @@ export default {
           return global_.getStateName(state,global_.authStatus);
       }		
     },
-    checkPath(imgPath){	
-      var ImgObj = new Image();
-      ImgObj.src = imgPath;
-      if(ImgObj.fileSize > 0 || (ImgObj.width > 0 && ImgObj.height > 0)){
-        return imgPath;
-      } else {
-        return global_.public_img;
+    // 时间数据处理
+    dateformat(date){
+      return dayjs(date).format('YYYY-MM-DD HH:mm:ss');
+    },
+    // 图片有效性检查
+    async checkPath(imgPath){      
+      try {
+        let res = await get(imgPath);
+        return true;
+      } catch (error) {
+        return false;
       }
     },
   },
@@ -167,10 +130,18 @@ export default {
      margin: 0 5px;
   }
   .wrap-img {
-    /*width:80%;*/
+    width: 200px;
+    height: 200px;
+    overflow: hidden;
+    padding: 40px 0 20px;
   }
   .wrap-img img {
-    /*width:100%;*/
-    max-height:100%;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+    vertical-align: middle;
+    position: absolute;
+    bottom: 20px;
   }
 </style>

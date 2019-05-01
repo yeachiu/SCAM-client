@@ -43,8 +43,8 @@ import User from './components/user'
 import Language from './components/language'
 import { mapMutations, mapActions } from 'vuex'
 import { getNewTagList, getNextRoute, routeEqual } from '@/libs/util'
-import minLogo from '@/assets/images/ico.png'
-import maxLogo from '@/assets/images/logo.png'
+import minLogo from '@/assets/images/logo-mini.png'
+import maxLogo from '@/assets/images/logo-main.png'
 import './main.less'
 export default {
   name: 'Main',
@@ -132,13 +132,13 @@ export default {
 
 <style scoped>
   .logo-con{
-    width: 100px;
+    /* width: 100px;
     height: 30px;
-    border-radius: 3px;
+    border-radius: 3px; */
     float: left;
     position: relative;
-    top: 7px;
-    left: 20px;
+    /* top: 7px;
+    left: 20px; */
   }
   .header-nav{
     width: 430px;

@@ -5,6 +5,8 @@ export default {
   state: {
     userName: '',
     userId: '',
+    aparId:'',
+    stuId:'',
     avatorImgPath: '',
     token: getToken(),
     access: ''
@@ -16,8 +18,14 @@ export default {
     setUserId (state, id) {
       state.userId = id
     },
-    setUserName (state, name) {
-      state.userName = name
+    setUserName (state, userName) {
+      state.userName = userName
+    },
+    setAparId (state, aparId) {
+      state.aparId = aparId
+    },
+    setStuId (state, stuId) {
+      state.stuId = stuId
     },
     setAccess (state, access) {
       state.access = access
@@ -39,10 +47,16 @@ export default {
       try {
           let res = await post('/account/all-permission-tag')
           commit('setAccess', res.data)
+          let resp = await post('/account/current')
+          commit('setUserId', resp.data.id);
+          commit('setUserName', resp.data.username);
+          commit('setAparId', resp.data.aparId);
+          commit('setStuId',resp.data.stuId);
           return {access:res.data}
       } catch (error) {
         errorHandler(error)
       }
+      
     }
   } 
 }

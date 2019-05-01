@@ -111,13 +111,25 @@ export default {
     close(){
       this.$emit('cancel',false);
     },
-    checkPath(imgPath){	
-      var ImgObj = new Image();
-      ImgObj.src = imgPath;
-      if(ImgObj.fileSize > 0 || (ImgObj.width > 0 && ImgObj.height > 0)){
-        return imgPath;
-      } else {
-        return global_.public_img;
+    // 头像加载不成功时触发
+    fixAvatar(adminId){
+      this.activityData.otherAdmin.forEach(ele => {
+        if(ele.id === adminId){
+          ele.avatar = 'https://i.loli.net/2017/08/21/599a521472424.jpg';
+        }
+      })
+    },
+	// 时间数据处理
+    dateformat(date){
+      return dayjs(date).format('YYYY-MM-DD HH:mm:ss');
+    },
+    // 图片有效性检查
+    async checkPath(imgPath){      
+      try {
+        let res = await get(imgPath);
+        return true;
+      } catch (error) {
+        return false;
       }
     },
     getStateName(state,type){
@@ -160,7 +172,7 @@ export default {
       this.loading = true;
       try {
         let userId = this.$store.state.user.userId;
-        let res = await post('/app/signup/checkState/{actiId}/{userId}')
+        let res = await post('/app/activity/signup/checkState/{actiId}/{userId}')
         this.insignup = res.data;
       } catch (error) {
         this.$throw(error);
@@ -172,7 +184,7 @@ export default {
       this.loading = true;
       try {
         let userId = this.$store.state.user.userId;
-        let res = await post('/app/signup/changeState/{actiId}/{userId}',null,this.insignup);
+        let res = await post('/app/activity/signup/changeState/{actiId}/{userId}',null,this.insignup);
         // this.$Message.destroy()
         // this.$Message.success({
         //   content:"关注",

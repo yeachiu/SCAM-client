@@ -4,10 +4,13 @@
       <Avatar :src="userAvator"/>
       <Icon :size="18" type="md-arrow-dropdown"></Icon>
       <DropdownMenu slot="list">
+        <DropdownItem name="my">signed in as <b>{{$store.state.user.userName}}</b></DropdownItem>
+        <DropdownItem style="border-top:1px solid #ccc"></DropdownItem>
         <DropdownItem name="my">个人主页</DropdownItem>
         <!-- <DropdownItem name="stuAuth">学生认证</DropdownItem> -->
         <DropdownItem name="activities">我的活动</DropdownItem>
         <DropdownItem name="credits">我的学分</DropdownItem>
+        <DropdownItem name="linktoback" v-if="hasAparId">前往后台</DropdownItem>
         <DropdownItem name="logout">退出登录</DropdownItem>
       </DropdownMenu>
     </Dropdown>
@@ -25,10 +28,23 @@ export default {
       default: ''
     }
   },
+  created(){
+    this.checkAparId();
+  },
+  data(){
+    return{
+      hasAparId:false
+    }
+  },
   methods: {
     ...mapActions([
       'handleLogOut'
     ]),
+    checkAparId(){
+      if(this.$store.state.user.aparId != null){
+        this.hasAparId = true;
+      }
+    },
     handleClick (name) {
       switch (name) {
         case 'my':
@@ -36,17 +52,17 @@ export default {
             name:'my'
           })
           break;
-          case 'stuAuth':
+        case 'stuAuth':
           this.$router.push({
             name:'auth'
           })
           break;
-          case 'activities':
+        case 'activities':
           this.$router.push({
             name:'activities'
           })
           break;
-          case 'credits':
+        case 'credits':
           this.$router.push({
             name:'credits'
           })
@@ -56,6 +72,11 @@ export default {
             this.$router.push({
               name: 'login'
             })
+          })
+          break;
+        case 'linktoback':
+          this.handleLogOut().then(() => {
+            window.location.href = "http://localhost:1003"
           })
           break;
       }

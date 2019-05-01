@@ -1,11 +1,15 @@
 <template>
   <div>
-    
     <Row style="width:980px;margin:0 auto;margin-bottom:100px;">
+      <!-- <Alert show-icon v-if="showAlert">
+      友情提示
+      <template slot="desc">
+        <span>报名活动需要先进行</span>
+        <a href="/c/my">学生认证</a>
+      </template>
+    </Alert> -->
       <h2 class="actiTitle">{{activityData.title}}
         <span class="star" @click="changeFocus">
-          <!-- <Icon type="ios-bookmark-outline"  v-if="infocus" title="关注活动"/>
-          <Icon type="ios-bookmark" color="#ffac2d" v-else title="取消关注" /> -->
           <Icon type="ios-star-outline" v-if="infocus" title="关注活动"/>
           <Icon type="md-star" color="#ffac2d" v-else title="取消关注"/>
         </span>        
@@ -26,29 +30,12 @@
             </p>
             <p>
               <span class="tt"><Icon type="md-time" />&nbsp;报名时间</span>&nbsp;
-              <span class="cc">{{activityData.signUpTime}} -- {{activityData.deadlineTime}}</span>
+              <span class="cc">{{dateformat(activityData.signUpTime)}} -- {{dateformat(activityData.deadlineTime)}}</span>
             </p>
             <p>
               <span class="tt"><Icon type="md-alarm" />&nbsp;活动时间</span>&nbsp;
-              <span class="cc">{{activityData.signUpTime}} -- {{activityData.deadlineTime}}</span>
+              <span class="cc">{{dateformat(activityData.signUpTime)}} -- {{dateformat(activityData.deadlineTime)}}</span>
             </p>
-            <!-- <p>
-              <span class="tt"><Icon type="md-people"/>&nbsp;活动管理员</span>&nbsp;
-              <Poptip v-for="item in activityData.otherAdminlist" trigger="hover" >
-                <span class="aa"><Icon type="ios-person-outline" size="18"/>{{item.realName}}</span>
-                <div slot="content" >
-                  <p>姓名 : {{ item.realName }}</p>
-                  <p>学号 : {{ item.stuNum }}</p>
-                  <p>年级 : {{ item.period }}级</p>
-                  <p>专业 : {{ item.profession }}</p>
-                  <p>班级 : {{ item.whatClass }}</p>
-                </div>
-              </Poptip>
-            </p>   -->
-          <!-- </Col>
-          <Col span="8" class="col">
-            
-          </Col> -->
         </div>
         <p class="tt" style="margin-top: 50px;"><Icon type="ios-paper" />详情</p>
         <p class="description">{{activityData.description}}</p>
@@ -56,29 +43,31 @@
       <Col span="8">
         <div class="actionbar">
           <span class="signupButton" @click="changeSignup" v-if="activityData.status > 1">
-            <Button v-if="insignup">报名</Button>
-            <Button v-else>取消报名</Button>
+            <Button v-if="insignup">取消报名</Button>
+            <Button v-else>报名</Button>
           </span>
           <!-- <span class="signupButton" @click="changeSignup">
             <Button>报名</Button>
           </span>   -->
         </div>
         <div class="actiImg">
-          <img v-bind:src="checkPath(activityData.pictureUrl)" alt="120">
+          <img v-bind:src="activityData.pictureUrl" alt="活动配图" v-if="checkPath(activityData.pictureUrl)"/>
+          <img v-bind:src="global_.public_img" alt="活动配图" v-else>
         </div>
         <div class="result">
           <Divider>活动结果/获奖名单</Divider>
           <div class="card">
             <p v-if="activityData.status != 4">结果未出</p>
             <!-- <Table :columns="resultColumn" :data="actiResult"></Table> -->
-            <div v-else v-for="item in actiResult">
+            <div v-else v-for="item in actiResult" :key="item.id">
               <p class="awardname">{{item.awardName}}</p>
-              <p class="awarduser" v-for="user in item.winners">{{user.whatClass}} - {{user.realName}}</p>
+              <p class="awarduser" v-for="user in item.winners" :key="user.id">{{user.whatClass}} - {{user.realName}}</p>
             </div>
           </div>
         </div>
       </Col>
     </Row>
+    
   </div>
 </template>
 <script>
@@ -112,7 +101,9 @@ export default {
         rules:'',
       },
       infocus:false,
+      focusState:{},
       insignup:false,
+      signupState:{},
       grouplist: [],
       actiResult:[
         {awardName:'一等奖',winners:[{realName:'user1',whatClass:'15建筑1班'},{realName:'user1',whatClass:'15建筑1班'}]},
@@ -122,12 +113,13 @@ export default {
       resultColumn:[
         {title:'奖项',key:'awardName'},
         {title:'名单',key:'winners'}
-      ]
+      ],
+      showAlert:false
     };
   },
-  props: {
-    id: String
-  },
+  // props: [
+  //   'id'
+  // ],
   created(){
     this.getData();
   },
@@ -136,11 +128,17 @@ export default {
       this.loading = true;
       try {
         this.actiId = this.$route.params.id;
-        let res = await post('/app/activity/getActivityData/{this.actiId}')
+        let res = await post('/app/activity/get/{id}',null,{
+          id:this.actiId
+        })
         this.activityData = res.data;
       } catch (error) {
         this.$throw(error);
       }
+      if(this.checkUserAuth()){
+        this.isSignup(this.activityData.id);
+      }
+      this.isFocus(this.activityData.id);
       this.loading = false;
     },
     close(){
@@ -154,24 +152,36 @@ export default {
           return global_.getStateName(state,global_.authStatus);
       }		
     },
-    checkPath(imgPath){	
-      var ImgObj = new Image();
-      ImgObj.src = imgPath;
-      if(ImgObj.fileSize > 0 || (ImgObj.width > 0 && ImgObj.height > 0)){
-        return imgPath;
-      } else {
-        return global_.public_img;
+    // 时间数据处理
+    dateformat(date){
+      return dayjs(date).format('YYYY-MM-DD HH:mm:ss');
+    },
+    // 图片有效性检查
+    async checkPath(imgPath){      
+      try {
+        let res = await get(imgPath);
+        return true;
+      } catch (error) {
+        return false;
       }
+    },
+    // 头像加载不成功时触发
+    fixAvatar(adminId){
+      this.activityData.otherAdmin.forEach(ele => {
+        if(ele.id === adminId){
+          ele.avatar = 'https://i.loli.net/2017/08/21/599a521472424.jpg';
+        }
+      })
     },
     async isFocus(actiId){
       this.loading = true;
-      try {
-        let userId = this.$store.state.user.userId;
-        let res = await post('/app/focus/checkState/{actiId}/{userId}')
-        this.infocus = res.data;
-      } catch (error) {
-        this.$throw(error);
-      }
+      // try {
+      //   let userId = this.$store.state.user.userId;
+      //   let res = await post('/app/focus/checkState/{actiId}/{userId}')
+      //   this.infocus = res.data;
+      // } catch (error) {
+      //   this.$throw(error);
+      // }
       this.loading = false;
     },
     async changeFocus(){
@@ -191,36 +201,66 @@ export default {
       }
       this.loading = false;
     },
-    async isSignup(actiId){
-      this.loading = true;
-      try {
-        let userId = this.$store.state.user.userId;
-        let res = await post('/app/signup/checkState/{actiId}/{userId}')
-        this.insignup = res.data;
-      } catch (error) {
-        this.$throw(error);
+    // 检查用户认证状态
+    checkUserAuth(){
+      if(this.$store.state.user.stuId == null){ //未认证
+        return false;
       }
-      this.loading = false;
+      return true;
     },
-    async changeSignup(){
-      this.insignup = this.insignup ? false : true;
-      this.loading = true;
-      try {
-        let userId = this.$store.state.user.userId;
-        let res = await post('/app/signup/changeState/{actiId}/{userId}',null,this.insignup);
-        // this.$Message.destroy()
-        // this.$Message.success({
-        //   content:"关注",
-        //   duration: 1
-        // });
-        this.insignup = res.data;
-      } catch (error) {
-        this.$throw(error);
+    async isSignup(actiId){
+      
+      
+        this.loading = true;
+        try {
+          let data = {
+            actiId : actiId,
+            uid : this.$store.state.user.userId
+          };
+          let res = await post('/app/activity/signup/checkState',data);
+          if(res.data.id != null && res.data.id != ''){
+            this.insignup = true;
+          }
+          this.signupState = res.data;
+        } catch (error) {
+          this.$throw(error);
+        }
+        this.loading = false;
+      
+      
+    },
+    async changeSignup(){ 
+      if(this.$store.state.user.stuId == null){ //已认证
+        this.$Message.warning({
+          duration: 3,
+          render: h => {
+            return h('span', [
+              '报名活动需要先进行',
+              h('a', {
+                on:{
+                  click:()=>{
+                    this.$router.push({
+                      path: `/c/my`,
+                    })
+                  }
+                }
+              },'学生认证')
+            ])
+          }
+        });
+      }else{
+        this.loading = true;
+        try {
+          let res = await post('/app/activity/signup/changeState',this.signupState);
+          this.insignup = this.insignup ? false : true;
+        } catch (error) {
+          this.$throw(error);
+        }
+        this.loading = false;
       }
-      this.loading = false;
     }
   },
-  mounted() {}
+  
 };
 </script>
 <style>
