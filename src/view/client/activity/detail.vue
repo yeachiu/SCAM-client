@@ -42,13 +42,14 @@
       </Col>
       <Col span="8">
         <div class="actionbar">
-          <span class="signupButton" @click="changeSignup" v-if="activityData.status > 1">
+          <span class="signupButton" @click="changeSignup" v-if="activityData.status > 1 && activityData.status < 4">
             <Button v-if="insignup">取消报名</Button>
             <Button v-else>报名</Button>
           </span>
-          <!-- <span class="signupButton" @click="changeSignup">
-            <Button>报名</Button>
-          </span>   -->
+          <span class="signupButton" @click="changeSignup" v-else-if="activityData.status > 1">
+            <Button v-if="insignup" disabled>取消报名</Button>
+            <Button v-else disabled>报名</Button>
+          </span>
         </div>
         <div class="actiImg">
           <img v-bind:src="activityData.pictureUrl" alt="活动配图" v-if="checkPath(activityData.pictureUrl)"/>
@@ -67,38 +68,49 @@
         </div>
       </Col>
     </Row>
-    
+    <Modal ref="modal" v-model="showSignupForm" scrollable :width="800" :mask-closable="false">
+      <!-- <form-create v-model="signupDate" :rule="activityData.rules" :option="option" style="margin:0 auto"></form-create> -->
+      <form-create ref="fc" v-model="fApi" :rule="activityData.rules" :option="option" style="margin:0 auto"></form-create>
+      <div slot="footer">
+        <Button type="info"  @click="submitSignup">提交</Button>
+      </div>
+    </Modal>
+
   </div>
 </template>
 <script>
 import global_   from  '@/view/global.vue'
 import dayjs from "dayjs";
 import { post } from "@/libs/axios-cfg";
+
 export default {
   data() {
     return {
       loading: false,
       actiId:'',
+      showSignupForm:false,
+      fApi:{},
+      test:"1111",
+      model: {},
+      signupDate:{},
+      //组件参数配置
+      option:{
+        submitBtn:false,
+      },
       activityData:{
         pictureUrl: '',
-        title: 'zz获胜的防护服搜救zzzzzzzzzzzzzzz',
-        description: 'zzzzzzzzzzzzzzzz仿vUI经济囧不是林小欧和熊咯哦11zzzzzzzzzzzzzzz',
+        title: '',
+        description: '',
         organizer:{
-          id:'123d',name:'yguidiu'
+          id:'',name:''
         },
-        address:'埃菲尔铁塔七楼三点钟方向',
-        signUpTime: '2019-04-08 15:25:10',
-        deadlineTime:'2019-04-08 15:25:10',
-        startTime:'2019-04-08 15:25:10',
-        endTime:'2019-04-08 15:25:10',
-        limitQuota: 100,
-        otherAdminlist: [
-          {realName: "邱XX",stuNum: "1122344455",period:2015,profession:'信息系统',whatClass: "15信管1班"},
-        ],
-        isblackList: '1',
-        isreview: '1',
-        status:2,
-        rules:'',
+        address:'',
+        signUpTime: null,
+        deadlineTime:null,
+        startTime:null,
+        endTime:null,
+        status:null,
+        rules:[],
       },
       infocus:false,
       focusState:{},
@@ -114,7 +126,8 @@ export default {
         {title:'奖项',key:'awardName'},
         {title:'名单',key:'winners'}
       ],
-      showAlert:false
+      // showAlert:false,
+      classOptions:[]
     };
   },
   // props: [
@@ -132,6 +145,7 @@ export default {
           id:this.actiId
         })
         this.activityData = res.data;
+        this.activityData.rules = JSON.parse(res.data.rules);
       } catch (error) {
         this.$throw(error);
       }
@@ -209,26 +223,25 @@ export default {
       return true;
     },
     async isSignup(actiId){
-      
-      
-        this.loading = true;
-        try {
-          let data = {
-            actiId : actiId,
-            uid : this.$store.state.user.userId
-          };
-          let res = await post('/app/activity/signup/checkState',data);
-          if(res.data.id != null && res.data.id != ''){
-            this.insignup = true;
-          }
-          this.signupState = res.data;
-        } catch (error) {
-          this.$throw(error);
+      this.loading = true;
+      try {
+        let data = {
+          actiId : actiId,
+          uid : this.$store.state.user.userId
+        };
+        let res = await post('/app/activity/signup/checkState',data);
+        if(res.data.id != null && res.data.id != ''){
+          this.insignup = true;
+        }else{
+          this.insignup = false;
         }
-        this.loading = false;
-      
-      
+        this.signupState = res.data;
+      } catch (error) {
+        this.$throw(error);
+      }
+      this.loading = false;
     },
+    // 报名/取消报名
     async changeSignup(){ 
       if(this.$store.state.user.stuId == null){ //已认证
         this.$Message.warning({
@@ -249,20 +262,67 @@ export default {
           }
         });
       }else{
-        this.loading = true;
-        try {
-          let res = await post('/app/activity/signup/changeState',this.signupState);
-          this.insignup = this.insignup ? false : true;
-        } catch (error) {
-          this.$throw(error);
-        }
-        this.loading = false;
+        if(this.insignup){  //取消报名
+          alert("取消报名")
+          this.loading = true;
+          try {
+            let res = await post('/app/activity/signup/changeState',this.signupState);
+            this.$Message.success("取消成功");
+            this.isSignup(this.actiId);
+          } catch (error) {
+            this.$throw(error);
+          }
+          this.loading = false;
+          }else{
+            // 填写报名表单
+            //  alert("填写报名表单")
+            this.showSignupForm = true;
+          }
       }
-    }
+    },
+    initRules(){
+      this.activityData.rules.forEach(item => {
+        if(item.field == 'whatClass'){
+          this.getClassOptions();
+          item.options = this.classOptions;
+          return;
+        }
+      })
+    },
+    async submitSignup(){
+      this.loading = true;
+      try {
+        this.showSignupForm = false;
+        this.signupState.signupData = JSON.stringify(this.fApi.formData());
+        let res = await post('/app/activity/signup/changeState',this.signupState);
+        this.isSignup(this.actiId);
+        this.$Message.success("报名成功");
+      } catch (error) {
+        this.$throw(error);
+      }
+      this.loading = false;
+    },
+    async getClassOptions(){
+      this.loading = true;
+        try {
+          let res = await post('/app/group/list/class')
+          this.classOptions = res.data.map(item => {
+            return {
+              value: item.title,
+              label: item.title,
+            };
+          });
+        } catch (error) {
+          this.$throw(error)
+        }
+      this.loading = true;
+    },
   },
-  
+  mounted:function(){
+    this.model = this.fApi.model();
+  }
 };
-</script>
+// </script>
 <style>
   .actiTitle {
     margin: 20px 10px;

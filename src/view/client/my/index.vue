@@ -28,7 +28,7 @@
               <div class="listItem" v-for="(item,index) in signuplist" :key="index">
                 <Col span="16" class="col">
                   <div class="content">
-                    <a class="title1" target="_blank" @click="openDetailModal(item.id)">{{item.title}}</a>
+                    <a class="title1" target="_blank" @click="linkToDetail(item.id)">{{item.title}}</a>
                     <p class="abstract">{{item.description}}</p>
                     <div class="meta1">
 					            <span style="margin: 0 5px;">
@@ -43,7 +43,7 @@
                 </Col>
                 <Col span="8" class="col">
                   <div class="wrap-img">
-						        <a v-bind:href="linkToDetail" target="_self">
+						        <a @click="linkToDetail(item.id)" target="_self">
 							        <img v-bind:src="item.pictureUrl" alt="活动配图" v-if="checkPath(item.pictureUrl)"/>
                       <img v-bind:src="global_.public_img" alt="活动配图" v-else>
 						        </a>
@@ -57,7 +57,7 @@
               <div class="listItem" v-for="(item,index) in historylist" :key="index">
                 <Col span="16" class="col">
                   <div class="content">
-                    <a class="title1" target="_blank" @click="openDetailModal(item.id)">{{item.title}}</a>
+                    <a class="title1" target="_blank" @click="linkToDetail(item.id)">{{item.title}}</a>
                     <p class="abstract">{{item.description}}</p>
                     <div class="meta1">
 					            <span style="margin: 0 5px;">
@@ -72,7 +72,7 @@
                 </Col>
                 <Col span="8" class="col">
                   <div class="wrap-img">
-                    <a v-bind:href="linkToDetail" target="_self">
+                    <a @click="linkToDetail(item.id)" target="_self">
                       <img v-bind:src="item.pictureUrl" alt="活动配图" v-if="checkPath(item.pictureUrl)"/>
                       <img v-bind:src="global_.public_img" alt="活动配图" v-else>
                     </a>
@@ -86,7 +86,7 @@
               <div class="listItem" v-for="(item,index) in focuslist" :key="index" @click="openDetailModal(item.id)">
                 <Col span="16" class="col">
                   <div class="content">
-                    <a class="title1" target="_blank" @click="openDetailModal(item.id)">{{item.title}}</a>
+                    <a class="title1" target="_blank" @click="linkToDetail(item.id)">{{item.title}}</a>
                     <p class="abstract">{{item.description}}</p>
                     <div class="meta1">
 					            <span style="margin: 0 5px;"><Icon type="md-flame" size="14" color="#ea6f5a"/>&nbsp;{{getStateName(item.status,'acti')}}</span>
@@ -100,7 +100,7 @@
                 </Col>
                 <Col span="8" class="col">
                   	<div class="wrap-img">
-						          <a v-bind:href="linkToDetail" target="_self">
+						          <a @click="linkToDetail(item.id)" target="_self">
 							          <img v-bind:src="item.pictureUrl" alt="活动配图" v-if="checkPath(item.pictureUrl)"/>
                         <img v-bind:src="global_.public_img" alt="活动配图" v-else>
 						          </a>
@@ -126,7 +126,7 @@
             <p>专业 : {{ userData.userAuth.profession }}</p>
             <p>班级 : {{ userData.userAuth.className }}</p>
           </div>
-          <Form ref="formAuth" label-position="right" :rules="ruleValidate" :label-width="50" v-if="showFormAuth">
+          <Form ref="formAuth" label-position="right" :rules="validate" :label-width="50" v-if="showFormAuth">
             <FormItem label="姓名" prop="realName">
               <Input v-model="formAuth.realName" size="small"></Input>
             </FormItem>
@@ -140,13 +140,13 @@
             <FormItem label="专业">
               <!-- //从数字字典找专业 -->
               <Select v-model="profession" filterable size="small">
-                <Option v-for="option in professOptions" :value="option.id" :key="option.id">{{option.title}}</Option>
+                <Option v-for="option in professOptions" :value="option.id" :key="option.id">{{option.dictName}}</Option>
               </Select>
             </FormItem>
-            <p class="prev-notice">{{validateNotice}}</p>
-            <FormItem label="班级"  prop="stuClass">
+            <!-- <p class="prev-notice">{{validateNotice}}</p> -->
+            <FormItem label="班级">
               <!-- //根据选择的专业找班级 -->
-              <Select v-model="formAuth.stuClass" filterable size="small">
+              <Select v-model="formAuth.className" filterable size="small">
                 <Option v-for="option in classOptions" :value="option.id" :key="option.id">{{option.title}}</Option>
               </Select>
             </FormItem>
@@ -169,7 +169,7 @@
         </div>
       </Col>
     </Row>
-    <ActiDetailModal v-if="showDetail" :id="detailId" @cancel="closeDetailModal"/>
+    <!-- <ActiDetailModal v-if="showDetail" :id="detailId" @cancel="closeDetailModal"/> -->
   </div>
 </template>
 <script>
@@ -181,7 +181,8 @@ import ActiDetailModal from './component/detail.vue'
   let ACT_STATUS_DRAFT = 1;   //草稿
   let ACT_STATUS_PUBLISH = 2;   //已发布
   let ACT_STATUS_PROCESS = 3;   //进行中
-  let ACT_STATUS_COMPLETE = 4;   //已结束
+  let ACT_STATUS_COMPLETE = 4;   //已完成
+  let ACT_STATUS_DONE = 5;   //已结束
   let ACT_STATUS_CANCEL = 0;  //已取消
 
 export default {
@@ -202,19 +203,19 @@ export default {
     linkToApartment: "",
     //学生认证相关属性
       formAuth:{
-        id:'',
+        uid:'',
         realName:'',
         stuNum:'',
         period: dayjs().year(),
         profession:'',		//	id
-        stuClass:'',		//id
+        className:'',		//id
       },
-      ruleValidate:{
+      validate:{
         realName:[
-          {required:true,message:'姓名不能为空', trigger:'blur'}
+          {required:true, message:'姓名不能为空', trigger:'blur'}
         ],
         stuNum:[
-          {required:true,message:'学号不能为空', trigger:'blur'}          
+          {required:true, message:'学号不能为空', trigger:'blur'}          
         ]
       },
 	    professOptions:[],
@@ -222,7 +223,7 @@ export default {
       
     validateNotice:'',  //// unsure
     profession:'',    // unsure
-	  linkToDetail:'',
+	  // linkToDetail:'',
     };
   },
   created() {
@@ -285,6 +286,9 @@ export default {
           case ACT_STATUS_COMPLETE:
             history.push(acti);
             break;
+          case ACT_STATUS_DONE:
+            history.push(acti);
+            break;
         }
       })
       this.signuplist = signup;
@@ -312,7 +316,12 @@ export default {
     openDetailModal(val) {
       this.detailId = val;
 	  this.showDetail = true;
-	},
+  },
+  linkToDetail(actiId){
+    this.$router.push({
+      path: `detail/${actiId}`,
+    })
+  },
 	closeDetailModal(val){
 		this.showDetail = val;
 	},
@@ -343,10 +352,12 @@ export default {
       }
     },
 	// 学生认证
-	async findAllProfession(){
+	async findAllProfession(){    //获取所有专业
 		this.loading = true;
 		try {
-			const res = await post('/app/group/list/profession');
+      const res = await post('system/dictionary/list/{dictCode}',null,{
+        dictCode:'INSTITUTE'
+      })
 			this.professOptions = res.data;
 		} catch (error) {
 			this.$throw(error);
@@ -361,7 +372,7 @@ export default {
 			return;
     }
     let data = {
-      professionId : this.formAuth.profession,
+      dictId : this.formAuth.profession,
       period : this.formAuth.period
     };
 		try{
@@ -373,28 +384,30 @@ export default {
 		this.loading = false;
 	},
 	async submitAuth(){
-		let pass = false;
-		this.$refs.formAuth.validate((valid) => {
-      console.log("validate:" + valid)
-			if (valid) {
-				pass = true;
-			}
-    })
-    if(pass){
+		// let pass = false;
+		// this.$refs.formAuth.validate((valid) => {
+    //   console.log("validate:" + valid)
+		// 	if (valid) {
+		// 		pass = true;
+		// 	}
+    // })
+    // if(pass){
       this.loading = true; 
       try {
-        const res = await post('/system/user/auth/add', this.formAuth);
+        this.formAuth.uid = this.$store.state.user.userId;
+        const res = await post('/student/auth/add', this.formAuth);
         this.getData(false)
         this.$Message.destroy()
         this.$Message.success({
           content:"认证提交成功",
           duration: 1.5
         });
+        this.cancelAuth();
       } catch (error) {
         this.$throw(error);
       }
       this.loading = false;
-    }
+    // }
     
 	},
 	cancelAuth(){
@@ -562,14 +575,17 @@ export default {
   }
   .my .wrap-img {
     width: 200px;
-    height: 200px;
+    height: 100%;
     overflow: hidden;
+    padding: 0 0;
   }
   .my .wrap-img img {
+    position: inherit;
     width: auto;
     height: auto;
     max-width: 100%;
     max-height: 100%;
     vertical-align: middle;
+    bottom: auto;
   }
 </style>

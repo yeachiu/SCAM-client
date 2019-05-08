@@ -8,7 +8,8 @@ const actiStatus = [
   { state: 1,type:'未发布'},//
   { state: 2,type:'报名中'},//已发布未开报名，已发布开报名，已报名
   { state: 3,type:'进行中'},
-  { state: 4,type:'已结束'},
+  { state: 4,type:'已完成'},
+  { state: 5,type:'已结束'},
 ];
 /** 认证状态 **/ 
 const authStatus = [

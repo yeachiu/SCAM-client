@@ -119,8 +119,9 @@
 .login-model{
   width: 350px;
   float: right;
-  margin-right: 260px;
-  display: inline-block;   
+  margin-right: 206px;
+  display: inline-block;
+  margin-top: 100px;   
 }
 .login-con {
   padding: 20px 30px;
