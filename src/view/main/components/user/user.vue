@@ -76,7 +76,7 @@ export default {
           break;
         case 'linktoback':
           this.handleLogOut().then(() => {
-            window.location.href = "http://localhost:1003"
+            window.location.href = "http://localhost:1004"
           })
           break;
       }

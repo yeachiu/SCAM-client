@@ -42,7 +42,7 @@
       </Col>
       <Col span="8">
         <div class="actionbar">
-          <span class="signupButton" @click="changeSignup" v-if="activityData.status > 1 && activityData.status < 4">
+          <span class="signupButton" @click="changeSignup" v-if="activityData.status > 1 && activityData.status < 3">
             <Button v-if="insignup">取消报名</Button>
             <Button v-else>报名</Button>
           </span>
@@ -303,6 +303,7 @@ export default {
       this.loading = false;
     },
     async getClassOptions(){
+      alert("getClassOptions")
       this.loading = true;
         try {
           let res = await post('/app/group/list/class')
