@@ -1,7 +1,14 @@
 {
-  "name": "luckyCat",
-  "version": "0.1.0",
-  "description": "luckyCat",
+  "name": "SCAM-Client",
+  "version": "0.1.x",
+  "description": "SCAM",
+  "author": "Yeachiu <Qiujl037@outlook.com>",
+  "license": "MIT",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yeachiu/SCAM-Client-0.1.x"
+  },
   "scripts": {
     "dev": "vue-cli-service serve --open --port=1004",
     "build": "vue-cli-service build",

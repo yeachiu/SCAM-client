@@ -164,7 +164,7 @@
         </p>
         <div class="myMess">
           <div class="card">
-            <p>phone : {{ userData.phone }}</p>
+            <p>phone : 13794535628</p>
           </div>
         </div>
       </Col>
@@ -199,7 +199,7 @@ export default {
     signuplist: [],
     focuslist: [],
     historylist: [],
-    scoreCount:null,
+    scoreCount: 0,
     linkToApartment: "",
     //学生认证相关属性
       formAuth:{
@@ -244,6 +244,7 @@ export default {
           id:this.$store.state.user.userId
         });
         this.userData = res.data;
+        userData.phone = '13794535629';
         if(res.data.userAuth == null){
           this.userData.userAuth = {
             status : 0,
